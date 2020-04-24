@@ -1,165 +1,61 @@
-# ![](https://ga-dash.s3.amazonaws.com/production/assets/logo-9f88ae6c9c3871690e33280fcf557f33.png) Project 3: Web APIs & NLP
+# Subreddit Classification Using Web APIs & NLP
+#### Danielle Medellin [GitHub](https://github.com/dmedellin2)
 
-### Description
+## Problem Statement
+NBC is looking to see how people engage with some of their most famous sitcoms on social media. An intern at NBC was tasked with gathering as many posts as he could for NBC sitcoms like _Will & Grace, The Office, Parks and Recreation, Brooklyn 99_, and _The Good Place_. Unfortunately, this intern was terrible at organization and dumped all of the posts he found into one general folder. NBC needs help identifying which show these posts belong to and have asked for our help, specifically with their difficulty classifying two shows: _The Office_ and _Parks and Recreation._
 
-In week four we've learned about a few different classifiers. In week five we'll learn about webscraping, APIs, and Natural Language Processing (NLP). This project will put those skills to the test.
+It is so difficult to separate the posts between these two shows because they share a lot of similarities. For starters, they share some of the same creators including Greg Daniels and Michael Schur. Both shows are considered workplace comedies as they take place at either a paper company or a government office. While both shows started and ended in different years, they had many years of overlap where both were actively on the air. Additionally, the two shows share some character names and even an actor! For example, both shows include a character named 'Andy' and Rashida Jones played a consistent role in both TV shows. Looking at crossover between character names and actor names, we get even more commonalities, for example the character 'Michael Scott' from _The Office_ and the actor Adam Scott, who plays a main role in _Parks and Recreation_.  
 
-For project 3, your goal is two-fold:
-1. Using [Pushshift's](https://github.com/pushshift/api) API, you'll collect posts from two subreddits of your choosing.
-2. You'll then use NLP to train a classifier on which subreddit a given post came from. This is a binary classification problem.
+Due to the many similarities between these two shows, NBC came to us to help them sort through the posts they gathered. We will use the related subreddits for each of these shows to help us build a model that can classify the posts correctly. The two subreddits we will use are: **r/DunderMifflin** -- _The Office_, and **r/PandR** -- _Parks and Recreation_ .  
 
+Additionally, NBC is also interested in what content helped made it possible to differentiate between the two shows and what Reddit users are talking about the most in each of the subreddits. 
 
-#### About the API
+We will build a classification model that will help to sort each post to its appropriate subreddit. Our model's success will be measured with an accuracy score.
 
-Pushshift's API is fairly straightforward. For example, if I want the posts from [`/r/boardgames`](https://www.reddit.com/r/boardgames), all I have to do is use the following url: https://api.pushshift.io/reddit/search/submission?subreddit=boardgames
+## Executive Summary
+Our goal was to build a model that could classify reddit submissions into their appropriate subreddits, which were based on two TV shows that share a lot of similarities. We wanted to find the best indicators that could help predict which subreddit a submission would fall into. 
 
-To help you get started, we have a primer video on how to use the API: https://youtu.be/AcrjEWsMi_E
+We collected our data using the Pushshift Reddit API. The work for this can be found in the `data_gathering` notebook. We collected submissions from both subreddits in 6 month intervals over the past 10 years. Both shows have been off the air for quite some time so we had to dig a little deeper to find posts that were submitted when the shows were still on. _The Office_ aired from 2005-2013 and _Parks and Recreation_ aired from 2009-2015. Both subreddits were first created in January 2011. 
 
----
+The data we collected included the submissions to the individual subreddits and information about those submissions including: titles, number of comments, authors, and scores. A full data dictionary can be found below. 
 
-### Requirements
+### Data Dictionary
+|Feature|Type|Description|
+|:---|:---:|:---|
+|title|object|The title of the Reddit submission|
+|selftext|object|Additional text about the post (optional)|
+|subreddit|int|A 0 indicates r/DunderMiffilin, a 1 indicates r/PandR|
+|author|object|Username of submission author|
+|num_comments|int|Number of comments on that submission|
+|score|int|A submission's score is the number of upvotes minus the number of downvotes|
+|timestamp|datetime|The date of submission|
 
-- Gather and prepare your data using the `requests` library.
-- **Create and compare two models**. One of these must be a Bayes classifier, however the other can be a classifier of your choosing: logistic regression, KNN, SVM, etc.
-- A Jupyter Notebook with your analysis for a peer audience of data scientists.
-- An executive summary of your results.
-- A short presentation outlining your process and findings for a semi-technical audience.
+Once we had our data, we did some data cleaning and began to look at the possible features that could help predict which subreddit a post was from. Each submission has a title and we beleived that looking at the contents of these titles would be a good indicator of subreddit page. Many of the submissions had additional text(self text), but not all submissions did. This could have added information to our model, but was determined to not be a useful feature because we were missing a good portion of that data, and for many of the posts on these subreddits, there was very little additional text. Most posts included images or videos. We explored other features such as number of comments on a post and a submission score, but ultimately found that there was not enough difference in these features for each of the subreddits to help our predictions. 
 
-**Pro Tip:** You can find a good example executive summary [here](https://www.proposify.biz/blog/executive-summary).
+Our main feature to load into our model would be the titles of the submissions. In order to be useful, we had to turn this data into numeric data and did so using a Count Vectorizer or TF-IDF Vectorizer, which looked at the frequencies of the words in each title. We explored the most frequently seen words and created a list of stop words that we felt were not useful in identifying an individual subreddit and thus would not include them in the modeling process. This was an iterative process, as the two shows shared a lot, and thus there was a lot of overlap in the top most used words in submission titles. 
 
----
+We then explored many different classification models, taking time to tune each one in an effort to get a high accuracy score, and a model that was not too overfit. We evaluated our models and from them made conclusions and recommendations for NBC and how they could move forward with their sorting problem. 
+### Most Influential Words
+![Top 15 Words for r/PandR](./images/top15pr.png)
+![Top 15 Words for r/DunderMifflin](./images/top15off.png)
+Above we can see the top 15 indicator words for both subreddits found by our Logistic Regression model. 
 
-### Necessary Deliverables / Submission
+## Conclusions/Recommendations
+While our models did not perform _exceptionally well_, they were able to accurately classify almost 80% of the data. All of the models we tested performed much better than the baseline model. We found that words that reference characters and places from the TV shows were the best indicators for which subreddit a submission belongs in. Despite having some very strong indicators, there were still many misclassified posts. Because the shows are so similar, they have an overlapping fan base that often compare, discuss, and mention the two shows in both subreddits. 
 
-- Code and executive summary must be in a clearly commented Jupyter Notebook.
-- You must submit your slide deck.
-- Materials must be submitted by **10:00 AM on Friday, April 24th**.
+An interesting finding was that both of our chosen models classified posts from the r/DunderMifflin subreddit at a better rate than the r/PandR subreddit. For future models, we would look more into this fact and try to find stronger indicators for the r/PandR subreddit as well as continue to narrow down the words that can cause misclassification. 
 
----
+Finally, NBC could use this model to help classify posts from other social media platforms, not just Reddit, to classify them as relating to _The Office_ or _Parks and Recreation_. 
 
-## Rubric
-Your local instructor will evaluate your project (for the most part) using the following criteria.  You should make sure that you consider and/or follow most if not all of the considerations/recommendations outlined below **while** working through your project.
+## References
+“The Office.” IMDb, IMDb.com, 24 Mar. 2005, www.imdb.com/title/tt0386676/.  
 
-For Project 3 the evaluation categories are as follows:<br>
-**The Data Science Process**
-- Problem Statement
-- Data Collection
-- Data Cleaning & EDA
-- Preprocessing & Modeling
-- Evaluation and Conceptual Understanding
-- Conclusion and Recommendations
+“Parks and Recreation.” IMDb, IMDb.com, 9 Apr. 2009, www.imdb.com/title/tt1266020/.  
 
-**Organization and Professionalism**
-- Organization
-- Visualizations
-- Python Syntax and Control Flow
-- Presentation
+Pushshift.io. “Pushshift Reddit API Documentation.” GitHub, 1 Oct. 2019, github.com/pushshift/api.  
 
-**Scores will be out of 30 points based on the 10 categories in the rubric.** <br>
-*3 points per section*<br>
+“r/DunderMifflin: People Person's Paper People.” Reddit, www.reddit.com/r/DunderMifflin/.  
 
-| Score | Interpretation |
-| --- | --- |
-| **0** | *Project fails to meet the minimum requirements for this item.* |
-| **1** | *Project meets the minimum requirements for this item, but falls significantly short of portfolio-ready expectations.* |
-| **2** | *Project exceeds the minimum requirements for this item, but falls short of portfolio-ready expectations.* |
-| **3** | *Project meets or exceeds portfolio-ready expectations; demonstrates a thorough understanding of every outlined consideration.* |
+“r/PandR: Tommy's Place.” Reddit, www.reddit.com/r/PandR/.   
 
-
-### The Data Science Process
-
-**Problem Statement**
-- Is it clear what the goal of the project is?
-- What type of model will be developed?
-- How will success be evaluated?
-- Is the scope of the project appropriate?
-- Is it clear who cares about this or why this is important to investigate?
-- Does the student consider the audience and the primary and secondary stakeholders?
-
-**Data Collection**
-- Was enough data gathered to generate a significant result?
-- Was data collected that was useful and relevant to the project?
-- Was data collection and storage optimized through custom functions, pipelines, and/or automation?
-- Was thought given to the server receiving the requests such as considering number of requests per second?
-
-**Data Cleaning and EDA**
-- Are missing values imputed/handled appropriately?
-- Are distributions examined and described?
-- Are outliers identified and addressed?
-- Are appropriate summary statistics provided?
-- Are steps taken during data cleaning and EDA framed appropriately?
-- Does the student address whether or not they are likely to be able to answer their problem statement with the provided data given what they've discovered during EDA?
-
-**Preprocessing and Modeling**
-- Is text data successfully converted to a matrix representation?
-- Are methods such as stop words, stemming, and lemmatization explored?
-- Does the student properly split and/or sample the data for validation/training purposes?
-- Does the student test and evaluate a variety of models to identify a production algorithm (**AT MINIMUM:** Bayes and one other model)?
-- Does the student defend their choice of production model relevant to the data at hand and the problem?
-- Does the student explain how the model works and evaluate its performance successes/downfalls?
-
-**Evaluation and Conceptual Understanding**
-- Does the student accurately identify and explain the baseline score?
-- Does the student select and use metrics relevant to the problem objective?
-- Does the student interpret the results of their model for purposes of inference?
-- Is domain knowledge demonstrated when interpreting results?
-- Does the student provide appropriate interpretation with regards to descriptive and inferential statistics?
-
-**Conclusion and Recommendations**
-- Does the student provide appropriate context to connect individual steps back to the overall project?
-- Is it clear how the final recommendations were reached?
-- Are the conclusions/recommendations clearly stated?
-- Does the conclusion answer the original problem statement?
-- Does the student address how findings of this research can be applied for the benefit of stakeholders?
-- Are future steps to move the project forward identified?
-
-
-### Organization and Professionalism
-
-**Project Organization**
-- Are modules imported correctly (using appropriate aliases)?
-- Are data imported/saved using relative paths?
-- Does the README provide a good executive summary of the project?
-- Is markdown formatting used appropriately to structure notebooks?
-- Are there an appropriate amount of comments to support the code?
-- Are files & directories organized correctly?
-- Are there unnecessary files included?
-- Do files and directories have well-structured, appropriate, consistent names?
-
-**Visualizations**
-- Are sufficient visualizations provided?
-- Do plots accurately demonstrate valid relationships?
-- Are plots labeled properly?
-- Are plots interpreted appropriately?
-- Are plots formatted and scaled appropriately for inclusion in a notebook-based technical report?
-
-**Python Syntax and Control Flow**
-- Is care taken to write human readable code?
-- Is the code syntactically correct (no runtime errors)?
-- Does the code generate desired results (logically correct)?
-- Does the code follows general best practices and style guidelines?
-- Are Pandas functions used appropriately?
-- Are `sklearn` and `NLTK` methods used appropriately?
-
-**Presentation**
-- Is the problem statement clearly presented?
-- Does a strong narrative run through the presentation building toward a final conclusion?
-- Are the conclusions/recommendations clearly stated?
-- Is the level of technicality appropriate for the intended audience?
-- Is the student substantially over or under time?
-- Does the student appropriately pace their presentation?
-- Does the student deliver their message with clarity and volume?
-- Are appropriate visualizations generated for the intended audience?
-- Are visualizations necessary and useful for supporting conclusions/explaining findings?
-
-
----
-
-### Why did we choose this project for you?
-This project covers three of the biggest concepts we cover in the class: Classification Modeling, Natural Language Processing and Data Wrangling/Acquisition.
-
-Part 1 of the project focuses on **Data wrangling/gathering/acquisition**. This is a very important skill as not all the data you will need will be in clean CSVs or a single table in SQL.  There is a good chance that wherever you land you will have to gather some data from some unstructured/semi-structured sources; when possible, requesting information from an API, but often scraping it because they don't have an API (or it's terribly documented).
-
-Part 2 of the project focuses on **Natural Language Processing** and converting standard text data (like Titles and Comments) into a format that allows us to analyze it and use it in modeling.
-
-Part 3 of the project focuses on **Classification Modeling**.  Given that project 2 was a regression focused problem, we needed to give you a classification focused problem to practice the various models, means of assessment and preprocessing associated with classification.   
+“r/Reddit.com.” Reddit, www.reddit.com/wiki/faq#wiki_how_is_a_submission.27s_score_determined.3F.
